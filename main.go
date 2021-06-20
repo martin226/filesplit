@@ -10,6 +10,19 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+func parseArguments() (*int, *string) {
+	numberPtr := flag.IntP("number","N", 0, "Number of output files. (Required)")
+	fPathPtr := flag.StringP("file", "F", "", "Path to the file. (Required)")
+	flag.Parse()
+
+	if *fPathPtr == "" || *numberPtr < 1 {
+		fmt.Printf("Usage: filesplit [-F, --file] [-N, --number] \n")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+	return numberPtr, fPathPtr
+}
+
 func getLines(scanner *bufio.Scanner) []string {
 	result := []string{}
 
@@ -42,17 +55,27 @@ func mkOutputDir(fName string) (string, error) {
 	return dName, nil
 }
 
+func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string) error {
+	var j int
+	var fileN int
+	for i := 0; i < lineCount; i += linesPerFile{
+		fileN++
+		j += linesPerFile
+		if j > lineCount {
+			j = lineCount
+		}
+		chunk := lines[i:j]
+		err := writeLines(chunk, fmt.Sprintf("%v/output_%v.txt", dName, fileN))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func main() {
 	// Parse arguments
-	outputPtr := flag.IntP("number","N", 0, "Number of output files. (Required)")
-	fPathPtr := flag.StringP("file", "F", "", "Path to the file. (Required)")
-	flag.Parse()
-
-	if *fPathPtr == "" || *outputPtr < 1 {
-		fmt.Printf("Usage: filesplit [-F, --file] [-N, --number] \n")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
+	numberPtr, fPathPtr := parseArguments()
 
 	// Read file
 	f, err := os.Open(*fPathPtr)
@@ -67,7 +90,7 @@ func main() {
 	if lineCount == 0 {
 		return
 	}
-	linesPerFile := (lineCount + *outputPtr - 1) / *outputPtr
+	linesPerFile := (lineCount + *numberPtr - 1) / *numberPtr
 
 	// Create output directory
 	dName, err2 := mkOutputDir(filepath.Base(*fPathPtr))
@@ -76,18 +99,8 @@ func main() {
 	}
 
 	// Write output files
-	var j int
-	var fileN int
-	for i := 0; i < lineCount; i += linesPerFile{
-		fileN++
-		j += linesPerFile
-		if j > lineCount {
-			j = lineCount
-		}
-		chunk := lines[i:j]
-		err3 := writeLines(chunk, fmt.Sprintf("%v/output_%v.txt", dName, fileN))
-		if err3 != nil {
-			panic(err3)
-		}
+	err3 := mkOutputFiles(lineCount, linesPerFile, lines, dName)
+	if err3 != nil {
+		panic(err3)
 	}
 }
