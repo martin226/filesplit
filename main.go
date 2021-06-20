@@ -10,13 +10,34 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+func parseMode() string {
+	if len(os.Args) == 1 {
+		fmt.Printf("Usage: filesplit [mode] [-F, --file] [-N, --number] \n")
+		fmt.Println("Available modes:")
+		fmt.Println("  file   Split the file into a specific number of sub-files.")
+		fmt.Println("  line   Split the file into sub-files with a specific number of lines per file.")
+		os.Exit(1)
+	}
+
+	mode := os.Args[1]
+	
+	if mode == "file" || mode == "line" {
+		return mode
+	} else {
+		fmt.Printf("%v: unknown mode\n", os.Args[1])
+		os.Exit(1)
+		return ""
+	}
+
+}
+
 func parseArguments() (*int, *string) {
 	numberPtr := flag.IntP("number","N", 0, "Number of output files. Must be greater than 0. (Required)")
 	fPathPtr := flag.StringP("file", "F", "", "Path to file. (Required)")
 	flag.Parse()
 
 	if *fPathPtr == "" || *numberPtr < 1 {
-		fmt.Printf("Usage: filesplit [-F, --file] [-N, --number] \n")
+		fmt.Printf("Usage: filesplit [mode] [-F, --file] [-N, --number] \n")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -75,10 +96,13 @@ func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string
 
 func main() {
 	flag.Usage = func() {
-		fmt.Printf("Usage: filesplit [-F, --file] [-N, --number] \n")
+		fmt.Printf("Usage: filesplit [mode] [-F, --file] [-N, --number] \n")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	// Parse mode
+	mode := parseMode()
 
 	// Parse arguments
 	numberPtr, fPathPtr := parseArguments()
@@ -96,7 +120,13 @@ func main() {
 	if lineCount == 0 {
 		return
 	}
-	linesPerFile := (lineCount + *numberPtr - 1) / *numberPtr
+
+	var linesPerFile int
+	if mode == "file" {
+		linesPerFile = (lineCount + *numberPtr - 1) / *numberPtr
+	} else {
+		linesPerFile = *numberPtr
+	}
 
 	// Create output directory
 	dName, err2 := mkOutputDir(filepath.Base(*fPathPtr))
