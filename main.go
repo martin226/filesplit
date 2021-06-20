@@ -74,6 +74,12 @@ func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string
 }
 
 func main() {
+	flag.Usage = func() {
+		fmt.Printf("Usage: filesplit [-F, --file] [-N, --number] \n")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	// Parse arguments
 	numberPtr, fPathPtr := parseArguments()
 
