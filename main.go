@@ -55,7 +55,7 @@ func mkOutputDir(fName string) (string, error) {
 	return dName, nil
 }
 
-func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string) error {
+func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string, fileExt string) error {
 	var j int
 	var fileN int
 	for i := 0; i < lineCount; i += linesPerFile{
@@ -65,7 +65,7 @@ func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string
 			j = lineCount
 		}
 		chunk := lines[i:j]
-		err := writeLines(chunk, fmt.Sprintf("%v/output_%v.txt", dName, fileN))
+		err := writeLines(chunk, fmt.Sprintf("%v/output_%v.%v", dName, fileN, fileExt))
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ func main() {
 	}
 
 	// Write output files
-	err3 := mkOutputFiles(lineCount, linesPerFile, lines, dName)
+	err3 := mkOutputFiles(lineCount, linesPerFile, lines, dName, filepath.Ext(*fPathPtr))
 	if err3 != nil {
 		panic(err3)
 	}
