@@ -11,8 +11,8 @@ import (
 )
 
 func parseArguments() (*int, *string) {
-	numberPtr := flag.IntP("number","N", 0, "Number of output files. (Required)")
-	fPathPtr := flag.StringP("file", "F", "", "Path to the file. (Required)")
+	numberPtr := flag.IntP("number","N", 0, "Number of output files. Must be greater than 0. (Required)")
+	fPathPtr := flag.StringP("file", "F", "", "Path to file. (Required)")
 	flag.Parse()
 
 	if *fPathPtr == "" || *numberPtr < 1 {
