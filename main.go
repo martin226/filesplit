@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	flag "github.com/spf13/pflag"
 )
 
@@ -77,10 +79,15 @@ func mkOutputDir(fName string) (string, error) {
 }
 
 func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string, fileExt string) error {
+	tmpl := `{{bar . "[" "=" " " " " "]"}} {{percent . "%.03f%%" "?"}} {{rtime . "| %s left" "| Finished in %s" " "}}`
+	totalFiles := math.Ceil((float64(lineCount))/float64(linesPerFile))
+	bar := pb.ProgressBarTemplate(tmpl).Start(int(totalFiles))
+
 	var j int
 	var fileN int
 	for i := 0; i < lineCount; i += linesPerFile{
 		fileN++
+		bar.Increment()
 		j += linesPerFile
 		if j > lineCount {
 			j = lineCount
@@ -91,6 +98,7 @@ func mkOutputFiles(lineCount int, linesPerFile int, lines []string, dName string
 			return err
 		}
 	}
+	bar.Finish()
 	return nil
 }
 
