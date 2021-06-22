@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"log"
 
 	"github.com/cheggaaa/pb/v3"
 	flag "github.com/spf13/pflag"
@@ -115,10 +116,14 @@ func main() {
 	// Parse arguments
 	numberPtr, fPathPtr := parseArguments()
 
+	log.Println("INFO: Filesplit started on mode", mode)
+
+	log.Println("INFO: Reading", *fPathPtr)
+
 	// Read file
 	f, err := os.Open(*fPathPtr)
 	if err != nil {
-		panic(err)
+		log.Fatalln("ERROR:", err)
 	}
 	scanner := bufio.NewScanner(f)
 
@@ -136,15 +141,17 @@ func main() {
 		linesPerFile = *numberPtr
 	}
 
+	log.Println("INFO: Writing", linesPerFile, "lines per file")
+
 	// Create output directory
 	dName, err2 := mkOutputDir(filepath.Base(*fPathPtr))
 	if err2 != nil {
-		panic(err2)
+		log.Fatalln("ERROR:", err)
 	}
 
 	// Write output files
 	err3 := mkOutputFiles(lineCount, linesPerFile, lines, dName, filepath.Ext(*fPathPtr))
 	if err3 != nil {
-		panic(err3)
+		log.Fatalln("ERROR:", err)
 	}
 }
